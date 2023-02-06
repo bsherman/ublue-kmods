@@ -4,7 +4,8 @@ on:
     branches:
       - main
   schedule:
-    - cron: '20 40 * * *'  # 8:40pm everyday
+    # 8:40pm everyday
+    - cron: '20 40 * * *'
   push:
     branches:
       - main
