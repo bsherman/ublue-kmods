@@ -22,6 +22,9 @@ RUN rpm-ostree install \
         binutils \
         kernel-devel-$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')
 
+# add xpadneo after existing ostree install completes
+RUN curl -sLO https://copr.fedorainfracloud.org/coprs/atim/xpadneo/repo/fedora-$(rpm -E %fedora)/atim-xpadneo-fedora-$(rpm -E %fedora).repo --output-dir /etc/yum.repos.d/
+RUN rpm-ostree install xpadneo
 
 # alternatives cannot create symlinks on its own during a container build
 RUN ln -s /usr/bin/ld.bfd /etc/alternatives/ld && ln -s /etc/alternatives/ld /usr/bin/ld
@@ -42,29 +45,41 @@ RUN NVIDIA_PACKAGE_NAME="$(cat /tmp/nvidia-package-name.txt)" \
     || \
         (cat /var/cache/akmods/${NVIDIA_PACKAGE_NAME}/${NVIDIA_VERSION}-for-${KERNEL_VERSION}.failed.log && exit 1)
 
-ADD akmods-nvidia-key.spec /tmp/akmods-nvidia-key/akmods-nvidia-key.spec
+# After nvidia, either successfully build and install xpadneo kernel module, or fail early with debug output
+RUN KERNEL_VERSION="$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" \
+    XPADNEO_VERSION="$(basename "$(rpm -q "xpadneo" --queryformat '%{VERSION}-%{RELEASE}')" ".fc$(rpm -E '%fedora')")" \
+    && akmods --force --kernels "${KERNEL_VERSION}" --kmod xpadneo \
+    && modinfo /usr/lib/modules/${KERNEL_VERSION}/extra/xpadneo/hid-xpadneo.ko.xz > /dev/null \
+    || (cat /var/cache/akmods/xpadneo/${XPADNEO_VERSION}-for-${KERNEL_VERSION}.failed.log && exit 1)
 
-RUN install -D /etc/pki/akmods/certs/public_key.der /tmp/akmods-nvidia-key/rpmbuild/SOURCES/public_key.der
+ADD akmods-custom-key.spec /tmp/akmods-custom-key/akmods-custom-key.spec
+
+RUN install -D /etc/pki/akmods/certs/public_key.der /tmp/akmods-custom-key/rpmbuild/SOURCES/public_key.der
 
 RUN rpmbuild -ba \
-    --define '_topdir /tmp/akmods-nvidia-key/rpmbuild' \
+    --define '_topdir /tmp/akmods-custom-key/rpmbuild' \
     --define '%_tmppath %{_topdir}/tmp' \
-    /tmp/akmods-nvidia-key/akmods-nvidia-key.spec
+    /tmp/akmods-custom-key/akmods-custom-key.spec
 
 
 RUN cp /tmp/nvidia-package-name.txt /var/cache/akmods/nvidia-package-name.txt
 RUN echo "${NVIDIA_MAJOR_VERSION}" > /var/cache/akmods/nvidia-major-version.txt
 RUN rpm -q "xorg-x11-drv-$(cat /tmp/nvidia-package-name.txt)" \
     --queryformat '%{EPOCH}:%{VERSION}-%{RELEASE}.%{ARCH}' > /var/cache/akmods/nvidia-full-version.txt
+RUN rpm -q "xpadneo" \
+    --queryformat '%{EPOCH}:%{VERSION}-%{RELEASE}.%{ARCH}' > /var/cache/akmods/xpadneo-full-version.txt
 
 FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION}
 
 COPY --from=builder /var/cache/akmods      /tmp/akmods
-COPY --from=builder /tmp/akmods-nvidia-key /tmp/akmods-nvidia-key
+COPY --from=builder /tmp/akmods-custom-key /tmp/akmods-custom-key
 
 RUN KERNEL_VERSION="$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" \
     NVIDIA_FULL_VERSION="$(cat /tmp/akmods/nvidia-full-version.txt)" \
     NVIDIA_PACKAGE_NAME="$(cat /tmp/akmods/nvidia-package-name.txt)" \
+    XPADNEO_FULL_VERSION="$(cat /tmp/akmods/xpadneo-full-version.txt)" \
+    && \
+        curl -sLO https://copr.fedorainfracloud.org/coprs/atim/xpadneo/repo/fedora-$(rpm -E %fedora)/atim-xpadneo-fedora-$(rpm -E %fedora).repo --output-dir /etc/yum.repos.d/ \
     && \
         rpm-ostree install \
             https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
@@ -74,7 +89,8 @@ RUN KERNEL_VERSION="$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}
             xorg-x11-drv-${NVIDIA_PACKAGE_NAME}-{,cuda-,devel-,kmodsrc-,power-}${NVIDIA_FULL_VERSION} \
             kernel-devel-${KERNEL_VERSION} \
             "/tmp/akmods/${NVIDIA_PACKAGE_NAME}/kmod-${NVIDIA_PACKAGE_NAME}-${KERNEL_VERSION}-${NVIDIA_FULL_VERSION#*:}.rpm" \
-            /tmp/akmods-nvidia-key/rpmbuild/RPMS/noarch/akmods-nvidia-key-*.rpm \
+            xpadneo "/tmp/akmods/xpadneo/kmod-xpadneo-${KERNEL_VERSION}-${XPADNEO_FULL_VERSION#*:}.rpm" \
+            /tmp/akmods-custom-key/rpmbuild/RPMS/noarch/akmods-custom-key-*.rpm \
     && \
         ln -s /usr/bin/ld.bfd /etc/alternatives/ld && \
         ln -s /etc/alternatives/ld /usr/bin/ld \

@@ -1,4 +1,4 @@
-# nvidia
+# silverblue-kmods
 
 [![build-ublue](https://github.com/bsherman/silverblue-kmods/actions/workflows/build.yml/badge.svg)](https://github.com/bsherman/silverblue-kmods/actions/workflows/build.yml)
 
@@ -7,7 +7,9 @@ Drivers included:
 - nvidia
 - xpadneo
 
-Note: This project is a work-in-progress. You should at a minimum be familiar with the [Fedora documentation](https://docs.fedoraproject.org/en-US/fedora-silverblue/) on how to administer an ostree system. This is currently for people who want to help figure this out, so there may be explosions and gnashing of teeth. 
+If used directly, this image is simply vanilla Silverblue plus the aforementioned drivers.
+
+Note: This project is a work-in-progress. You should at a minimum be familiar with the [Fedora documentation](https://docs.fedoraproject.org/en-US/fedora-silverblue/) on how to administer an ostree system. This is currently for people who want to help figure this out, so there may be explosions and gnashing of teeth.
 
 ## Setup
 
@@ -16,7 +18,7 @@ Note: This project is a work-in-progress. You should at a minimum be familiar wi
    Any system running `rpm-ostree` should be able to rebase onto one of the images built in this project:
 
        rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/silverblue-kmods:latest
-    
+
    And then reboot.
 
 2. Set kargs after rebasing
@@ -36,7 +38,7 @@ rpm-ostree kargs \
     [Secure Boot](https://rpmfusion.org/Howto/Secure%20Boot) support for the nvidia kernel modules can be enabled by enrolling the signing key:
 
 ```
-sudo mokutil --import /etc/pki/akmods/certs/akmods-nvidia.der
+sudo mokutil --import /etc/pki/akmods/certs/akmods-custom.der
 ```
 
 Alternatively, the key can be enrolled from within this repo:
@@ -50,13 +52,13 @@ sudo mokutil --import ./certs/public_key.der
    To rollback to a specific date, use a date tag:
 
        rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/silverblue-kmods:20230206
-       
+
  ## Verification
 
 These images are signed with sisgstore's [cosign](https://docs.sigstore.dev/cosign/overview/). You can verify the signature by downloading the `cosign.pub` key from this repo and running the following command:
 
     cosign verify --key cosign.pub ghcr.io/bsherman/silverblue-kmods
-    
+
 If you're forking this repo you should [read the docs](https://docs.github.com/en/actions/security-guides/encrypted-secrets) on keeping secrets in github. You need to [generate a new keypair](https://docs.sigstore.dev/cosign/overview/) with cosign. The public key can be in your public repo (your users need it to check the signatures), and you can paste the private key in Settings -> Secrets -> Actions.
 
 ## Building locally
