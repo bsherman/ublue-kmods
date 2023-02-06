@@ -1,6 +1,6 @@
 # nvidia
 
-[![build-ublue](https://github.com/ublue-os/nvidia/actions/workflows/build.yml/badge.svg)](https://github.com/ublue-os/nvidia/actions/workflows/build.yml)
+[![build-ublue](https://github.com/bsherman/silverblue-kmods/actions/workflows/build.yml/badge.svg)](https://github.com/bsherman/silverblue-kmods/actions/workflows/build.yml)
 
 A layer to build Nvidia drivers for consumption by other images.
 
@@ -12,7 +12,7 @@ Note: This project is a work-in-progress. You should at a minimum be familiar wi
 
    Any system running `rpm-ostree` should be able to rebase onto one of the images built in this project:
 
-       rpm-ostree rebase ostree-unverified-registry:ghcr.io/ublue-os/nvidia:latest
+       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/silverblue-kmods:latest
     
    And then reboot.
 
@@ -46,13 +46,13 @@ sudo mokutil --import ./certs/public_key.der
 
    To rollback to a specific date, use a date tag:
 
-       rpm-ostree rebase ostree-unverified-registry:ghcr.io/ublue-os/nvidia:20230128
+       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/silverblue-kmods:20230206
        
  ## Verification
 
 These images are signed with sisgstore's [cosign](https://docs.sigstore.dev/cosign/overview/). You can verify the signature by downloading the `cosign.pub` key from this repo and running the following command:
 
-    cosign verify --key cosign.pub ghcr.io/ublue-os/base
+    cosign verify --key cosign.pub ghcr.io/bsherman/silverblue-kmods
     
 If you're forking this repo you should [read the docs](https://docs.github.com/en/actions/security-guides/encrypted-secrets) on keeping secrets in github. You need to [generate a new keypair](https://docs.sigstore.dev/cosign/overview/) with cosign. The public key can be in your public repo (your users need it to check the signatures), and you can paste the private key in Settings -> Secrets -> Actions.
 
@@ -88,6 +88,4 @@ $ podman build \
 
 ## Acknowledgements
 
-Thanks to Alex Diaz for advice, and who got this working first, check out this repo:
-
-- https://github.com/akdev1l/ostree-images
+Thanks to Jorge Castro and [team ublue os](https://github.com/ublue-os) for their efforts to get people started with ostree native containers.
