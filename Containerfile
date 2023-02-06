@@ -1,4 +1,5 @@
 ARG BASE_IMAGE='quay.io/fedora-ostree-desktops/silverblue'
+# See https://pagure.io/releng/issue/11047 for final location
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-37}"
 
 FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION} AS builder
