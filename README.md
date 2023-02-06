@@ -2,7 +2,10 @@
 
 [![build-ublue](https://github.com/bsherman/silverblue-kmods/actions/workflows/build.yml/badge.svg)](https://github.com/bsherman/silverblue-kmods/actions/workflows/build.yml)
 
-A layer to build Nvidia drivers for consumption by other images.
+A layer to build kmod drivers into an image for consumption by other images.
+Drivers included:
+- nvidia
+- xpadneo
 
 Note: This project is a work-in-progress. You should at a minimum be familiar with the [Fedora documentation](https://docs.fedoraproject.org/en-US/fedora-silverblue/) on how to administer an ostree system. This is currently for people who want to help figure this out, so there may be explosions and gnashing of teeth. 
 
