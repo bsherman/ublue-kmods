@@ -96,8 +96,12 @@ RUN KERNEL_VERSION="$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}
         ln -s /usr/bin/ld.bfd /etc/alternatives/ld && \
         ln -s /etc/alternatives/ld /usr/bin/ld \
     && \
+        rpm -e rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
+               rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm \
+    && \
         rm -rf \
             /tmp/* \
             /var/* \
+            /etc/yum.repos.d/atim-xpadneo-fedora-$(rpm -E %fedora).repo \
     && \
         ostree container commit
