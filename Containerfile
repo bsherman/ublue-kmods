@@ -58,7 +58,7 @@ RUN KERNEL_VERSION="$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}
     && find /tmp/akmods -type f | sort \
     && \
         rpm-ostree install \
-            nvidia-driver nvidia-driver-cuda nvidia-modprobe nvidia-settings \
+            nvidia-driver nvidia-driver-cuda nvidia-modprobe \
             /tmp/akmods/nvidia/kmod-nvidia-${KERNEL_VERSION}-*.rpm \
             /tmp/akmods/xpadneo/kmod-xpadneo-${KERNEL_VERSION}-*.rpm \
             /tmp/akmods-custom-key/rpmbuild/RPMS/noarch/akmods-custom-key-*.rpm \
