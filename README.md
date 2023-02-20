@@ -1,15 +1,16 @@
-# silverblue-kmods
+# ublue-kmods
 
-[![build-ublue](https://github.com/bsherman/silverblue-kmods/actions/workflows/build.yml/badge.svg)](https://github.com/bsherman/silverblue-kmods/actions/workflows/build.yml)
+[![build-ublue](https://github.com/bsherman/ublue-kmods/actions/workflows/build.yml/badge.svg)](https://github.com/bsherman/ublue-kmods/actions/workflows/build.yml)
 
-A layer to build kmod drivers into an image for consumption by other images.
+A layer to build extra drivers into an image for consumption by other images.
 Drivers included:
 - xone
 - xpadneo
 
-If used directly, this image is a vanilla Silverblue plus the drivers listed above AND **nvidia** drivers, as this builds upon the the [ublue-os/nvidia](https://github.com/ublue-os/nvidia) Silverbue image.
+If used directly, this image is a vanilla Silverblue plus the drivers listed above AND **nvidia** drivers as built in [ublue-os/nvidia](https://github.com/ublue-os/nvidia) (this image's base).
 
-Note: This project is a work-in-progress. You should at a minimum be familiar with the [Fedora documentation](https://docs.fedoraproject.org/en-US/fedora-silverblue/) on how to administer an ostree system. This is currently for people who want to help figure this out, so there may be explosions and gnashing of teeth.
+### NOTE: this project is NOT formally afficiated with [ublue-os](https://github.com/ublue-os/) and is not supported by their team.
+
 
 ## Setup
 
@@ -17,13 +18,11 @@ Note: This project is a work-in-progress. You should at a minimum be familiar wi
 
    Any system running `rpm-ostree` should be able to rebase onto one of the images built in this project:
 
-       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/silverblue-kmods:latest
+       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/ublue-kmods:latest
 
    And then reboot.
 
 2. Set kargs after rebasing
-
-   Setting kargs to disable nouveau and enabling nvidia early at boot is [currently not supported within container builds](https://github.com/coreos/rpm-ostree/issues/3738). They must be set after rebasing:
 
 ```
 rpm-ostree kargs \
@@ -48,13 +47,13 @@ sudo mokutil --import /etc/pki/akmods/certs/akmods-nvidia.der
 
    To rollback to a specific date, use a date tag:
 
-       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/silverblue-kmods:20230220
+       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/ublue-kmods:20230220
 
  ## Verification
 
 These images are signed with sigstore's [cosign](https://docs.sigstore.dev/cosign/overview/). You can verify the signature by downloading the `cosign.pub` key from this repo and running the following command:
 
-    cosign verify --key cosign.pub ghcr.io/bsherman/silverblue-kmods
+    cosign verify --key cosign.pub ghcr.io/bsherman/ublue-kmods
 
 ## Other Details
 
