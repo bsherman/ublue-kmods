@@ -9,7 +9,7 @@ Drivers included:
 
 If used directly, this image is a vanilla Silverblue plus the drivers listed above AND **nvidia** drivers as built in [ublue-os/nvidia](https://github.com/ublue-os/nvidia) (this image's base).
 
-### NOTE: this project is NOT formally afficiated with [ublue-os](https://github.com/ublue-os/) and is not supported by their team.
+#### NOTE: this project is not formally affiliated with [ublue-os](https://github.com/ublue-os/) and is not supported by their team.
 
 
 ## Setup
