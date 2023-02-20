@@ -117,7 +117,7 @@ jobs:
           labels: |
             org.opencontainers.image.title=${{ format('{0}-kmods', matrix.image_name) }}
             org.opencontainers.image.description=Vanilla ${{ matrix.image_name }} with extra drivers added
-            io.artifacthub.package.readme-url=https://raw.githubusercontent.com/bsherman/silverblue-kmods/main/README.md
+            io.artifacthub.package.readme-url=https://raw.githubusercontent.com/bsherman/ublue-kmods/main/README.md
             #io.artifacthub.package.logo-url=https://avatars.githubusercontent.com/u/1728152?s=200&v=4
       # Build image using Buildah action
       - name: Build Image
@@ -132,7 +132,7 @@ jobs:
           tags: |
             ${{ steps.generate-tags.outputs.alias_tags }}
           build-args: |
-            IMAGE_NAME=${{ matrix.image_name }}
+            IMAGE_NAME=${{ format('{0}-nvidia', matrix.image_name) }}
             FEDORA_MAJOR_VERSION=${{ matrix.major_version }}
           labels: ${{ steps.meta.outputs.labels }}
           oci: false
