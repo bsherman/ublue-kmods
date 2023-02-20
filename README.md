@@ -48,7 +48,7 @@ sudo mokutil --import /etc/pki/akmods/certs/akmods-nvidia.der
 
    To rollback to a specific date, use a date tag:
 
-       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/silverblue-kmods:20230206
+       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/silverblue-kmods:20230220
 
  ## Verification
 
@@ -56,36 +56,10 @@ These images are signed with sigstore's [cosign](https://docs.sigstore.dev/cosig
 
     cosign verify --key cosign.pub ghcr.io/bsherman/silverblue-kmods
 
-If you're forking this repo you should [read the docs](https://docs.github.com/en/actions/security-guides/encrypted-secrets) on keeping secrets in github. You need to [generate a new keypair](https://docs.sigstore.dev/cosign/overview/) with cosign. The public key can be in your public repo (your users need it to check the signatures), and you can paste the private key in Settings -> Secrets -> Actions.
+## Other Details
 
-## Building locally
+Read more details about [building locally](https://github.com/ublue-os/nvidia#building-locally) and [using nvidia in containers](https://github.com/ublue-os/nvidia#using-nvidia-gpus-in-containers) in the [ublue-os/nvidia repo](https://github.com/ublue-os/nvidia).
 
-1. Generate signing keys
-
-    Self-generated signing keys in `certs/` are required for kernel module signing to succeed:
-
-```
-$ ./generate-akmod-key
-```
-
-2. Build container
-
-    A container build can be invoked by simply running:
-
-```
-$ podman build \
-    --file Containerfile \
-    --tag build-test:latest
-```
-
-    Or to specify the version of Fedora and/or Nvidia driver:
-
-```
-$ podman build \
-    --build-arg FEDORA_MAJOR_VERSION=37 \
-    --file Containerfile \
-    --tag build-test:latest
-```
 
 ## Acknowledgements
 
