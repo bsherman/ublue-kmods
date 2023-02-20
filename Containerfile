@@ -1,34 +1,38 @@
-ARG BASE_IMAGE='quay.io/fedora-ostree-desktops/silverblue'
-# See https://pagure.io/releng/issue/11047 for final location
+ARG BASE_IMAGE='ghcr.io/ublue-os/silverblue-nvidia'
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-37}"
 
 FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION} AS builder
 
 RUN sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/fedora-{cisco-openh264,modular,updates-modular}.repo
 
-RUN wget https://negativo17.org/repos/fedora-nvidia.repo -O /etc/yum.repos.d/fedora-nvidia.repo && \
-    wget https://negativo17.org/repos/fedora-steam.repo -O /etc/yum.repos.d/fedora-steam.repo && \
+RUN wget https://negativo17.org/repos/fedora-steam.repo -O /etc/yum.repos.d/fedora-steam.repo && \
     rpm-ostree install \
         akmods \
         mock \
-        nvidia-driver \
+        akmod-xone \
         akmod-xpadneo \
         binutils \
         kernel-devel-$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')
 
 # alternatives cannot create symlinks on its own during a container build
-RUN ln -s /usr/bin/ld.bfd /etc/alternatives/ld && ln -s /etc/alternatives/ld /usr/bin/ld
+
 
 ADD certs/public_key.der   /etc/pki/akmods/certs/public_key.der
 ADD certs/private_key.priv /etc/pki/akmods/private/private_key.priv
 
 RUN chmod 644 /etc/pki/akmods/{private/private_key.priv,certs/public_key.der}
 
-# Either successfully build and install nvidia kernel modules, or fail early with debug output
+# TODO: discover why this is needed for building on ublue-os/silverblue-nvidia but not official silverblue
+RUN chmod 1777 /var/tmp
+
+# Either successfully build and install xone kernel modules, or fail early with debug output
 RUN KERNEL_VERSION="$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" \
-    && akmods --force --kernels "${KERNEL_VERSION}" --kmod nvidia \
-    && modinfo /usr/lib/modules/${KERNEL_VERSION}/extra/nvidia/nvidia{,-drm,-modeset,-peermem,-uvm}.ko.xz > /dev/null \
-    || (cat /var/cache/akmods/nvidia/*-for-${KERNEL_VERSION}.failed.log && exit 1)
+    && ls -la /var/tmp \
+    && echo "foobar" > /var/tmp/foobar \
+    && ls -la /var/tmp \
+    && akmods --force --kernels "${KERNEL_VERSION}" --kmod xone \
+    && modinfo /usr/lib/modules/${KERNEL_VERSION}/extra/xone/xone-{dongle,gip-chatpad,gip-gamepad,gip-guitar,gip-headset,gip,wired}.ko.xz > /dev/null \
+    || (cat /var/cache/akmods/xone/*-for-${KERNEL_VERSION}.failed.log && exit 1)
 
 # Either successfully build and install xpadneo kernel module, or fail early with debug output
 RUN KERNEL_VERSION="$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" \
@@ -53,21 +57,16 @@ COPY --from=builder /tmp/akmods-custom-key /tmp/akmods-custom-key
 
 RUN KERNEL_VERSION="$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" \
     && \
-        wget https://negativo17.org/repos/fedora-nvidia.repo -O /etc/yum.repos.d/fedora-nvidia.repo && \
         wget https://negativo17.org/repos/fedora-steam.repo -O /etc/yum.repos.d/fedora-steam.repo \
     && find /tmp/akmods -type f | sort \
     && \
         rpm-ostree install \
-            nvidia-driver nvidia-driver-cuda nvidia-modprobe \
-            /tmp/akmods/nvidia/kmod-nvidia-${KERNEL_VERSION}-*.rpm \
+            /tmp/akmods/xone/kmod-xone-${KERNEL_VERSION}-*.rpm \
             /tmp/akmods/xpadneo/kmod-xpadneo-${KERNEL_VERSION}-*.rpm \
             /tmp/akmods-custom-key/rpmbuild/RPMS/noarch/akmods-custom-key-*.rpm \
     && \
-        ln -s /usr/bin/ld.bfd /etc/alternatives/ld && \
-        ln -s /etc/alternatives/ld /usr/bin/ld \
-    && \
         rm -rf \
-            /etc/yum.repos.d/fedora-{nvidia,steam}.repo \
+            /etc/yum.repos.d/fedora-steam.repo \
             /tmp/* \
             /var/* \
     && \

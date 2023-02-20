@@ -4,10 +4,10 @@
 
 A layer to build kmod drivers into an image for consumption by other images.
 Drivers included:
-- nvidia
+- xone
 - xpadneo
 
-If used directly, this image is simply vanilla Silverblue plus the aforementioned drivers.
+If used directly, this image is a vanilla Silverblue plus the drivers listed above AND **nvidia** drivers, as this builds upon the the [ublue-os/nvidia](https://github.com/ublue-os/nvidia) Silverbue image.
 
 Note: This project is a work-in-progress. You should at a minimum be familiar with the [Fedora documentation](https://docs.fedoraproject.org/en-US/fedora-silverblue/) on how to administer an ostree system. This is currently for people who want to help figure this out, so there may be explosions and gnashing of teeth.
 
@@ -35,17 +35,14 @@ rpm-ostree kargs \
 
 3. Enable Secure Boot support
 
-    [Secure Boot](https://rpmfusion.org/Howto/Secure%20Boot) support for the nvidia kernel modules can be enabled by enrolling the signing key:
+    [Secure Boot](https://rpmfusion.org/Howto/Secure%20Boot) support for the kernel modules can be enabled by enrolling the signing key:
 
 ```
+# note there are two different keys, one for nvidia by ublue-os, one for custom kmods in this project
 sudo mokutil --import /etc/pki/akmods/certs/akmods-custom.der
+sudo mokutil --import /etc/pki/akmods/certs/akmods-nvidia.der
 ```
 
-Alternatively, the key can be enrolled from within this repo:
-
-```
-sudo mokutil --import ./certs/public_key.der
-```
 
 ## Rolling back
 
@@ -86,7 +83,6 @@ $ podman build \
 ```
 $ podman build \
     --build-arg FEDORA_MAJOR_VERSION=37 \
-    --build-arg NVIDIA_MAJOR_VERSION=525 \
     --file Containerfile \
     --tag build-test:latest
 ```
