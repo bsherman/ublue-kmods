@@ -1,4 +1,5 @@
-ARG BASE_IMAGE='ghcr.io/ublue-os/silverblue-nvidia'
+ARG IMAGE_NAME="${IMAGE_NAME:-silverblue-nvidia}"
+ARG BASE_IMAGE='ghcr.io/ublue-os/${IMAGE_NAME}'
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-37}"
 
 FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION} AS builder
