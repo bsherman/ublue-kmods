@@ -7,7 +7,7 @@ Drivers included:
 - xone
 - xpadneo
 
-If used directly, this image is a vanilla Silverblue plus the drivers listed above AND **nvidia** drivers as built in [ublue-os/nvidia](https://github.com/ublue-os/nvidia) (this image's base).
+If used directly, this image is a vanilla Fedora Silverblue/Kinoite/Vauxite/Base(no DE) plus the drivers listed above AND **nvidia** drivers as built in [ublue-os/nvidia](https://github.com/ublue-os/nvidia) (this image's base).
 
 #### NOTE: this project is not formally affiliated with [ublue-os](https://github.com/ublue-os/) and is not supported by their team.
 
@@ -18,7 +18,10 @@ If used directly, this image is a vanilla Silverblue plus the drivers listed abo
 
    Any system running `rpm-ostree` should be able to rebase onto one of the images built in this project:
 
-       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/ublue-kmods:latest
+       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/silverblue-kmods:latest
+       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/kinoite-kmods:latest
+       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/vauxite-kmods:latest
+       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/base-kmods:latest
 
    And then reboot.
 
@@ -47,13 +50,19 @@ sudo mokutil --import /etc/pki/akmods/certs/akmods-nvidia.der
 
    To rollback to a specific date, use a date tag:
 
-       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/ublue-kmods:20230220
+       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/silverblue-kmods:20230220
+       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/kinoite-kmods:20230220
+       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/vauxite-kmods:20230220
+       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/base-kmods:20230220
 
  ## Verification
 
 These images are signed with sigstore's [cosign](https://docs.sigstore.dev/cosign/overview/). You can verify the signature by downloading the `cosign.pub` key from this repo and running the following command:
 
-    cosign verify --key cosign.pub ghcr.io/bsherman/ublue-kmods
+    cosign verify --key cosign.pub ghcr.io/bsherman/silverblue-kmods
+    cosign verify --key cosign.pub ghcr.io/bsherman/kinoite-kmods
+    cosign verify --key cosign.pub ghcr.io/bsherman/vauxite-kmods
+    cosign verify --key cosign.pub ghcr.io/bsherman/base-kmods
 
 ## Other Details
 
