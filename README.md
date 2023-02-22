@@ -57,7 +57,7 @@ sudo mokutil --import /etc/pki/akmods/certs/akmods-nvidia.der
 
  ## Verification
 
-These images are signed with sigstore's [cosign](https://docs.sigstore.dev/cosign/overview/). You can verify the signature by downloading the `cosign.pub` key from this repo and running the following command:
+These images are signed with sigstore's [cosign](https://docs.sigstore.dev/cosign/overview/). You can verify the signature by downloading the `cosign.pub` key from this repo and running the appropriate command:
 
     cosign verify --key cosign.pub ghcr.io/bsherman/silverblue-kmods
     cosign verify --key cosign.pub ghcr.io/bsherman/kinoite-kmods
