@@ -1,5 +1,6 @@
-ARG IMAGE_NAME="${IMAGE_NAME:-silverblue-nvidia}"
-ARG BASE_IMAGE="ghcr.io/ublue-os/${IMAGE_NAME}"
+ARG IMAGE_NAME="${IMAGE_NAME:-silverblue}"
+ARG IMAGE_BASE="${IMAGE_BASE:-quay.io/fedora-ostree-desktops}"
+ARG BASE_IMAGE="${IMAGE_BASE}/${IMAGE_NAME}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-37}"
 
 FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION} AS builder
@@ -16,21 +17,16 @@ RUN wget https://negativo17.org/repos/fedora-steam.repo -O /etc/yum.repos.d/fedo
         kernel-devel-$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')
 
 # alternatives cannot create symlinks on its own during a container build
+RUN if [[ ! -e /etc/alternatives/ld ]]; then \
+    ln -s /usr/bin/ld.bfd /etc/alternatives/ld && ln -s /etc/alternatives/ld /usr/bin/ld; fi
 
+ADD certs /tmp/certs
 
-ADD certs/public_key.der   /etc/pki/akmods/certs/public_key.der
-ADD certs/private_key.priv /etc/pki/akmods/private/private_key.priv
-
-RUN chmod 644 /etc/pki/akmods/{private/private_key.priv,certs/public_key.der}
-
-# TODO: discover why this is needed for building on ublue-os/silverblue-nvidia but not official silverblue
-RUN chmod 1777 /var/tmp
+RUN install -Dm644 /tmp/certs/public_key.der   /etc/pki/akmods/certs/public_key.der
+RUN install -Dm644 /tmp/certs/private_key.priv /etc/pki/akmods/private/private_key.priv
 
 # Either successfully build and install xone kernel modules, or fail early with debug output
 RUN KERNEL_VERSION="$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" \
-    && ls -la /var/tmp \
-    && echo "foobar" > /var/tmp/foobar \
-    && ls -la /var/tmp \
     && akmods --force --kernels "${KERNEL_VERSION}" --kmod xone \
     && modinfo /usr/lib/modules/${KERNEL_VERSION}/extra/xone/xone-{dongle,gip-chatpad,gip-gamepad,gip-guitar,gip-headset,gip,wired}.ko.xz > /dev/null \
     || (cat /var/cache/akmods/xone/*-for-${KERNEL_VERSION}.failed.log && exit 1)
@@ -53,22 +49,69 @@ RUN rpmbuild -ba \
 
 FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION}
 
+ARG IMAGE_NAME="${IMAGE_NAME:-silverblue}"
+
 COPY --from=builder /var/cache/akmods      /tmp/akmods
 COPY --from=builder /tmp/akmods-custom-key /tmp/akmods-custom-key
 
+COPY --from=ghcr.io/ublue-os/udev-rules:latest /ublue-os-udev-rules /
+
+RUN sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/fedora-{cisco-openh264,modular,updates-modular}.repo
+
 RUN KERNEL_VERSION="$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" \
+    RPMFUSION_INSTALLED="$(rpm -qa --queryformat='%{NAME} ' rpmfusion-free-release rpmfusion-nonfree-release)" \
     && \
         wget https://negativo17.org/repos/fedora-steam.repo -O /etc/yum.repos.d/fedora-steam.repo \
-    && find /tmp/akmods -type f | sort \
     && \
-        rpm-ostree install \
+        if [[ "$RPMFUSION_INSTALLED" == "" ]]; then \
+            rpm-ostree install \
+                https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
+                https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm; \
+        else \
+            sed -i '0,/enabled=0/{s/enabled=0/enabled=1/}' /etc/yum.repos.d/rpmfusion-{,non}free{,-updates}.repo; \
+        fi \
+    && \
+        rpm-ostree install --idempotent \
+            nvtop steam-devices \
             /tmp/akmods/xone/kmod-xone-${KERNEL_VERSION}-*.rpm \
             /tmp/akmods/xpadneo/kmod-xpadneo-${KERNEL_VERSION}-*.rpm \
             /tmp/akmods-custom-key/rpmbuild/RPMS/noarch/akmods-custom-key-*.rpm \
+    && \
+        if [[ "${IMAGE_NAME}" == *"nvidia" ]]; then \
+            echo "rpmfusion media packages should already be installed"; \
+        else \
+            rpm-ostree override remove $(rpm -qa --queryformat='%{NAME} ' \
+                mesa-va-drivers \
+                libavutil-free \
+                libswscale-free \
+                libswresample-free \
+                libavformat-free \
+                libavcodec-free \
+                libavfilter-free \
+                libavdevice-free \
+                libpostproc-free) \
+                --install=mesa-va-drivers-freeworld \
+                --install=mesa-vdpau-drivers-freeworld \
+                --install=libva-intel-driver \
+                --install=ffmpeg-libs \
+                --install=ffmpeg \
+                --install=libavcodec-freeworld \
+                --install=libva-utils; \
+        fi \
+    && \
+        sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/rpmfusion-{,non}free{,-updates}.repo \
+    && \
+        if [[ ! -e /etc/alternatives/ld ]]; then \
+            ln -s /usr/bin/ld.bfd /etc/alternatives/ld && \
+            ln -s /etc/alternatives/ld /usr/bin/ld; \
+        fi \
     && \
         rm -rf \
             /etc/yum.repos.d/fedora-steam.repo \
             /tmp/* \
             /var/* \
     && \
-        ostree container commit
+        ostree container commit \
+    && \
+        mkdir -p /var/tmp && \
+        chmod -R 1777 /var/tmp

@@ -4,7 +4,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: '15 06 * * *' # 6:15am UTC everyday
+    - cron: '0 21 * * *' # 9:00pm UTC everyday
   push:
     branches:
       - main
@@ -26,12 +26,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image_name: [silverblue, kinoite, vauxite, base]
+        image_name: [silverblue, kinoite, vauxite, silverblue-nvidia, kinoite-nvidia, vauxite-nvidia]
+        image_base: [quay.io/fedora-ostree-desktops, ghcr.io/ublue-os]
         major_version: [37]
+        exclude:
+          - image_base: ghcr.io/ublue-os
+            image_name: silverblue
+          - image_base: ghcr.io/ublue-os
+            image_name: kinoite
+          - image_base: ghcr.io/ublue-os
+            image_name: vauxite
+          - image_base: quay.io/fedora-ostree-desktops
+            image_name: silverblue-nvidia
+          - image_base: quay.io/fedora-ostree-desktops
+            image_name: kinoite-nvidia
+          - image_base: quay.io/fedora-ostree-desktops
+            image_name: vauxite-nvidia
         include:
-        # - major_version: 36
-        #   is_latest_version: false
-        #   is_stable_version: true
           - major_version: 37
             is_latest_version: true
             is_stable_version: true
@@ -133,6 +144,7 @@ jobs:
             ${{ steps.generate-tags.outputs.alias_tags }}
           build-args: |
             IMAGE_NAME=${{ format('{0}-nvidia', matrix.image_name) }}
+            IMAGE_BASE=${{ matrix.image_base ) }}
             FEDORA_MAJOR_VERSION=${{ matrix.major_version }}
           labels: ${{ steps.meta.outputs.labels }}
           oci: false
@@ -182,10 +194,9 @@ jobs:
 
       - name: Sign container image
         run: |
-          cosign sign --key cosign.key ${{ steps.registry_case.outputs.lowercase }}/${{ steps.build_image.outputs.image }}@${TAGS}
+          cosign sign --yes --key cosign.key ${{ steps.registry_case.outputs.lowercase }}/${{ steps.build_image.outputs.image }}@${TAGS}
         env:
           TAGS: ${{ steps.push.outputs.digest }}
-          COSIGN_EXPERIMENTAL: false
 
       - name: Echo outputs
         run: |

@@ -2,12 +2,19 @@
 
 [![build-ublue](https://github.com/bsherman/ublue-kmods/actions/workflows/build.yml/badge.svg)](https://github.com/bsherman/ublue-kmods/actions/workflows/build.yml)
 
-A layer to build extra drivers into an image for consumption by other images.
-Drivers included:
-- xone
-- xpadneo
+A layer to build extra drivers, udev-rules, and freeworld libs into an image for consumption by other images.
+Included:
+- xone driver
+- xpadneo driver
+- steam-devices udev rules
+- [ublue-os/udev-rules](https://github.com/ublue-os/udev-rules)
+- nvtop GPU status monitor (for AMD, Intel, and NVIDIA)
+- freeworld mesa and ffmpeg
+*nvidia* variants include goodies from [ublue-os/nvidia](https://github.com/ublue-os/nvidia):
+- nvidia drivers
+- nvidia container runtime
 
-If used directly, this image is a vanilla Fedora Silverblue/Kinoite/Vauxite/Base(no DE) plus the drivers listed above AND **nvidia** drivers as built in [ublue-os/nvidia](https://github.com/ublue-os/nvidia) (this image's base).
+If used directly, this image is mostly vanilla Fedora Silverblue/Kinoite/Vauxite except as described above.
 
 #### NOTE: this project is not formally affiliated with [ublue-os](https://github.com/ublue-os/) and is not supported by their team.
 
@@ -19,9 +26,11 @@ If used directly, this image is a vanilla Fedora Silverblue/Kinoite/Vauxite/Base
    Any system running `rpm-ostree` should be able to rebase onto one of the images built in this project:
 
        rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/silverblue-kmods:latest
+       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/silverblue-nvidia-kmods:latest
        rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/kinoite-kmods:latest
+       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/kinoite-nvidia-kmods:latest
        rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/vauxite-kmods:latest
-       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/base-kmods:latest
+       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/vauxite-nvidia-kmods:latest
 
    And then reboot.
 
@@ -42,6 +51,7 @@ rpm-ostree kargs \
 ```
 # note there are two different keys, one for nvidia by ublue-os, one for custom kmods in this project
 sudo mokutil --import /etc/pki/akmods/certs/akmods-custom.der
+
 sudo mokutil --import /etc/pki/akmods/certs/akmods-nvidia.der
 ```
 
@@ -50,19 +60,23 @@ sudo mokutil --import /etc/pki/akmods/certs/akmods-nvidia.der
 
    To rollback to a specific date, use a date tag:
 
-       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/silverblue-kmods:20230220
-       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/kinoite-kmods:20230220
-       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/vauxite-kmods:20230220
-       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/base-kmods:20230220
+       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/silverblue-kmods:20230302
+       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/silverblue-nvidia-kmods:20230302
+       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/kinoite-kmods:20230302
+       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/kinoite-nvidia-kmods:20230302
+       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/vauxite-kmods:20230302
+       rpm-ostree rebase ostree-unverified-registry:ghcr.io/bsherman/vauxite-nvidia-kmods:20230302
 
  ## Verification
 
 These images are signed with sigstore's [cosign](https://docs.sigstore.dev/cosign/overview/). You can verify the signature by downloading the `cosign.pub` key from this repo and running the appropriate command:
 
     cosign verify --key cosign.pub ghcr.io/bsherman/silverblue-kmods
+    cosign verify --key cosign.pub ghcr.io/bsherman/silverblue-nvidia-kmods
     cosign verify --key cosign.pub ghcr.io/bsherman/kinoite-kmods
+    cosign verify --key cosign.pub ghcr.io/bsherman/kinoite-nvidia-kmods
     cosign verify --key cosign.pub ghcr.io/bsherman/vauxite-kmods
-    cosign verify --key cosign.pub ghcr.io/bsherman/base-kmods
+    cosign verify --key cosign.pub ghcr.io/bsherman/vauxite-nvidia-kmods
 
 ## Other Details
 
