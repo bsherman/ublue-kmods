@@ -144,7 +144,7 @@ jobs:
             ${{ steps.generate-tags.outputs.alias_tags }}
           build-args: |
             IMAGE_NAME=${{ format('{0}-nvidia', matrix.image_name) }}
-            IMAGE_BASE=${{ matrix.image_base ) }}
+            IMAGE_BASE=${{ matrix.image_base }}
             FEDORA_MAJOR_VERSION=${{ matrix.major_version }}
           labels: ${{ steps.meta.outputs.labels }}
           oci: false
