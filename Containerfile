@@ -1,6 +1,6 @@
 ARG IMAGE_NAME="${IMAGE_NAME:-silverblue}"
-ARG IMAGE_BASE="${IMAGE_BASE:-quay.io/fedora-ostree-desktops}"
-ARG BASE_IMAGE="${IMAGE_BASE}/${IMAGE_NAME}"
+ARG IMAGE_SUFFIX="${IMAGE_SUFFIX:-main}"
+ARG BASE_IMAGE="ghcr.io/ublue-os/${IMAGE_NAME}-${IMAGE_SUFFIX}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-37}"
 
 FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION} AS builder
@@ -12,9 +12,7 @@ RUN wget https://negativo17.org/repos/fedora-steam.repo -O /etc/yum.repos.d/fedo
         akmods \
         mock \
         akmod-xone \
-        akmod-xpadneo \
-        binutils \
-        kernel-devel-$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')
+        akmod-xpadneo
 
 # alternatives cannot create symlinks on its own during a container build
 RUN if [[ ! -e /etc/alternatives/ld ]]; then \
@@ -49,62 +47,24 @@ RUN rpmbuild -ba \
 
 FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION}
 
-ARG IMAGE_NAME="${IMAGE_NAME:-silverblue}"
-
 COPY --from=builder /var/cache/akmods      /tmp/akmods
 COPY --from=builder /tmp/akmods-custom-key /tmp/akmods-custom-key
-
-COPY --from=ghcr.io/ublue-os/udev-rules:latest /ublue-os-udev-rules /
 
 RUN sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/fedora-{cisco-openh264,modular,updates-modular}.repo
 
 RUN KERNEL_VERSION="$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" \
-    RPMFUSION_INSTALLED="$(rpm -qa --queryformat='%{NAME} ' rpmfusion-free-release rpmfusion-nonfree-release)" \
+    RPMFUSION_ENABLED="$(grep enabled=1 /etc/yum.repos.d/rpmfusion-*.repo > /dev/null; echo $?)" \
     && \
         wget https://negativo17.org/repos/fedora-steam.repo -O /etc/yum.repos.d/fedora-steam.repo \
     && \
-        if [[ "$RPMFUSION_INSTALLED" == "" ]]; then \
-            rpm-ostree install \
-                https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
-                https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm; \
-        else \
+        if [[ "$RPMFUSION_ENABLED" == "1" ]]; then \
             sed -i '0,/enabled=0/{s/enabled=0/enabled=1/}' /etc/yum.repos.d/rpmfusion-{,non}free{,-updates}.repo; \
         fi \
     && \
         rpm-ostree install --idempotent \
-            nvtop steam-devices \
             /tmp/akmods/xone/kmod-xone-${KERNEL_VERSION}-*.rpm \
             /tmp/akmods/xpadneo/kmod-xpadneo-${KERNEL_VERSION}-*.rpm \
             /tmp/akmods-custom-key/rpmbuild/RPMS/noarch/akmods-custom-key-*.rpm \
-    && \
-        if [[ "${IMAGE_NAME}" == *"nvidia" ]]; then \
-            echo "rpmfusion media packages should already be installed"; \
-        else \
-            rpm-ostree override remove $(rpm -qa --queryformat='%{NAME} ' \
-                mesa-va-drivers \
-                libavutil-free \
-                libswscale-free \
-                libswresample-free \
-                libavformat-free \
-                libavcodec-free \
-                libavfilter-free \
-                libavdevice-free \
-                libpostproc-free) \
-                --install=mesa-va-drivers-freeworld \
-                --install=mesa-vdpau-drivers-freeworld \
-                --install=libva-intel-driver \
-                --install=ffmpeg-libs \
-                --install=ffmpeg \
-                --install=libavcodec-freeworld \
-                --install=libva-utils; \
-        fi \
-    && \
-        sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/rpmfusion-{,non}free{,-updates}.repo \
-    && \
-        if [[ ! -e /etc/alternatives/ld ]]; then \
-            ln -s /usr/bin/ld.bfd /etc/alternatives/ld && \
-            ln -s /etc/alternatives/ld /usr/bin/ld; \
-        fi \
     && \
         rm -rf \
             /etc/yum.repos.d/fedora-steam.repo \

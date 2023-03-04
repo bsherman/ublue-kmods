@@ -2,18 +2,15 @@
 
 [![build-ublue](https://github.com/bsherman/ublue-kmods/actions/workflows/build.yml/badge.svg)](https://github.com/bsherman/ublue-kmods/actions/workflows/build.yml)
 
-A layer to build extra drivers, udev-rules, and freeworld libs into an image for consumption by other images.
+A layer to build extra drivers into an image for consumption by other images, based on [ublue-os/main](https://github.com/ublue-os/main) images.
 
 Included:
 - xone driver
 - xpadneo driver
-- steam-devices udev rules
-- [ublue-os/udev-rules](https://github.com/ublue-os/udev-rules)
-- nvtop GPU status monitor (for AMD, Intel, and NVIDIA)
-- freeworld mesa and ffmpeg
-*nvidia* variants include goodies from [ublue-os/nvidia](https://github.com/ublue-os/nvidia):
+*nvidia* variants include packages from [ublue-os/nvidia](https://github.com/ublue-os/nvidia), primarily:
 - nvidia drivers
 - nvidia container runtime
+- ... plus all the goodies from *ublue-os/main* ...
 
 If used directly, this image is mostly vanilla Fedora Silverblue/Kinoite/Vauxite except as described above.
 
@@ -52,7 +49,7 @@ rpm-ostree kargs \
 ```
 # note there are two different keys, one for nvidia by ublue-os, one for custom kmods in this project
 sudo mokutil --import /etc/pki/akmods/certs/akmods-custom.der
-
+# akmods-nvidia.der only exists on nvidia images
 sudo mokutil --import /etc/pki/akmods/certs/akmods-nvidia.der
 ```
 
