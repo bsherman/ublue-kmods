@@ -7,10 +7,12 @@ A layer to build extra drivers into an image for consumption by other images, ba
 Included:
 - xone driver
 - xpadneo driver
+- ... plus all the goodies from *ublue-os/main* ...
+
 *nvidia* variants include packages from [ublue-os/nvidia](https://github.com/ublue-os/nvidia), primarily:
 - nvidia drivers
 - nvidia container runtime
-- ... plus all the goodies from *ublue-os/main* ...
+
 
 If used directly, this image is mostly vanilla Fedora Silverblue/Kinoite/Vauxite except as described above.
 
