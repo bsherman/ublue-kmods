@@ -23,6 +23,9 @@ ADD certs /tmp/certs
 RUN install -Dm644 /tmp/certs/public_key.der   /etc/pki/akmods/certs/public_key.der
 RUN install -Dm644 /tmp/certs/private_key.priv /etc/pki/akmods/private/private_key.priv
 
+# protect against incorrect permissions in tmp dirs with break akmods builds
+RUN chmod 1777 /tmp /var/tmp
+
 # Either successfully build and install xone kernel modules, or fail early with debug output
 RUN KERNEL_VERSION="$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" \
     && akmods --force --kernels "${KERNEL_VERSION}" --kmod xone \
@@ -73,5 +76,5 @@ RUN KERNEL_VERSION="$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}
     && \
         ostree container commit \
     && \
-        mkdir -p /var/tmp && \
-        chmod -R 1777 /var/tmp
+        mkdir -p /tmp /var/tmp && \
+        chmod 1777 /tmp /var/tmp
