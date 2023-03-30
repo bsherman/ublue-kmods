@@ -7,10 +7,13 @@ FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION} AS builder
 
 RUN sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/fedora-{cisco-openh264,modular,updates-modular}.repo
 
+RUN sed -i '0,/enabled=0/{s/enabled=0/enabled=1/}' /etc/yum.repos.d/rpmfusion-{,non}free{,-updates}.repo
+
 RUN wget https://negativo17.org/repos/fedora-steam.repo -O /etc/yum.repos.d/fedora-steam.repo && \
     rpm-ostree install \
         akmods \
         mock \
+        akmod-wl \
         akmod-xone \
         akmod-xpadneo
 
@@ -25,6 +28,12 @@ RUN install -Dm644 /tmp/certs/private_key.priv /etc/pki/akmods/private/private_k
 
 # protect against incorrect permissions in tmp dirs with break akmods builds
 RUN chmod 1777 /tmp /var/tmp
+
+# Either successfully build and install wl kernel modules, or fail early with debug output
+RUN KERNEL_VERSION="$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" \
+    && akmods --force --kernels "${KERNEL_VERSION}" --kmod wl \
+    && modinfo /usr/lib/modules/${KERNEL_VERSION}/extra/wl/wl.ko.xz > /dev/null \
+    || (cat /var/cache/akmods/wl/*-for-${KERNEL_VERSION}.failed.log && exit 1)
 
 # Either successfully build and install xone kernel modules, or fail early with debug output
 RUN KERNEL_VERSION="$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" \
@@ -65,6 +74,7 @@ RUN KERNEL_VERSION="$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}
         fi \
     && \
         rpm-ostree install --idempotent \
+            /tmp/akmods/wl/kmod-wl-${KERNEL_VERSION}-*.rpm \
             /tmp/akmods/xone/kmod-xone-${KERNEL_VERSION}-*.rpm \
             /tmp/akmods/xpadneo/kmod-xpadneo-${KERNEL_VERSION}-*.rpm \
             /tmp/akmods-custom-key/rpmbuild/RPMS/noarch/akmods-custom-key-*.rpm \

@@ -5,8 +5,9 @@
 A layer to build extra drivers into an image for consumption by other images, based on [ublue-os/main](https://github.com/ublue-os/main) images.
 
 Included:
-- xone driver
-- xpadneo driver
+- wl (broadcom legacy wireless) driver
+- xone (xbox one wired/rf usb) driver
+- xpadneo (xbox one bluetooth) driver
 - ... plus all the goodies from *ublue-os/main* ...
 
 *nvidia* variants include packages from [ublue-os/nvidia](https://github.com/ublue-os/nvidia), primarily:
