@@ -16,6 +16,23 @@ env:
     IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
 
 jobs:
+  build_info:
+    name: Get Build Info
+    runs-on: ubuntu-latest
+    outputs:
+      pr_prefix: ${{ steps.pr_prefix.outputs.pr_prefix }}
+    steps:
+      - name: Set PR Prefix
+        id: pr_prefix
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+              PR_PREFIX="pr-${{ github.event.number }}-"
+          else
+              PR_PREFIX=""
+          fi
+          echo "pr_prefix=${PR_PREFIX}" >> $GITHUB_OUTPUT
+
   build_akmods:
     name: Build base akmods
     runs-on: ubuntu-22.04
@@ -186,10 +203,10 @@ jobs:
         run: |
           echo "${{ toJSON(steps.push.outputs) }}"
 
-  push_variants:
+  build_variants:
     name: Build variant images
     runs-on: ubuntu-22.04
-    needs: [ build_akmods ]
+    needs: [ build_info, build_akmods ]
     permissions:
       contents: read
       packages: write
@@ -200,6 +217,8 @@ jobs:
         image_name: [silverblue, kinoite, vauxite]
         image_suffix: [main, nvidia]
         major_version: [37, 38]
+        pr_prefix:
+          - ${{ needs.build_info.outputs.pr_prefix }}
         include:
           - major_version: 37
             is_latest_version: true
@@ -303,6 +322,7 @@ jobs:
             IMAGE_NAME=${{ matrix.image_name }}
             IMAGE_SUFFIX=${{ matrix.image_suffix }}
             FEDORA_MAJOR_VERSION=${{ matrix.major_version }}
+            PR_PREFIX=${{ matrix.pr_prefix }}
           labels: ${{ steps.meta.outputs.labels }}
           oci: false
 

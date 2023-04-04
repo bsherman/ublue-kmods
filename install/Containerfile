@@ -6,9 +6,10 @@ ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-37}"
 FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION}
 
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-37}"
+ARG PR_PREFIX="${PR_PREFIX}"
 
-COPY --from="ghcr.io/bsherman/base-kmods:${FEDORA_MAJOR_VERSION}" /akmods            /tmp/akmods
-COPY --from="ghcr.io/bsherman/base-kmods:${FEDORA_MAJOR_VERSION}" /akmods-custom-key /tmp/akmods-custom-key
+COPY --from="ghcr.io/bsherman/base-kmods:${FEDORA_MAJOR_VERSION}${PR_PREFIX}" /akmods            /tmp/akmods
+COPY --from="ghcr.io/bsherman/base-kmods:${FEDORA_MAJOR_VERSION}${PR_PREFIX}" /akmods-custom-key /tmp/akmods-custom-key
 ADD install.sh /tmp/install.sh
 
 RUN /tmp/install.sh
