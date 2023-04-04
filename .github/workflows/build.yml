@@ -299,12 +299,12 @@ jobs:
         id: meta
         with:
           images: |
-            ${{ format('{0}-kmods', matrix.image_name) }}
+            ${{ 'nvidia' == matrix.image_suffix && format('{0}-nvidia-kmods', matrix.image_name) || format('{0}-kmods', matrix.image_name) }}
           labels: |
-            org.opencontainers.image.title=${{ format('{0}-kmods', matrix.image_name) }}
+            org.opencontainers.image.title=${{ 'nvidia' == matrix.image_suffix && format('{0}-nvidia-kmods', matrix.image_name) || format('{0}-kmods', matrix.image_name) }}
             org.opencontainers.image.description=Vanilla ${{ matrix.image_name }} with extra drivers added
             io.artifacthub.package.readme-url=https://raw.githubusercontent.com/bsherman/ublue-kmods/main/README.md
-            #io.artifacthub.package.logo-url=https://avatars.githubusercontent.com/u/1728152?s=200&v=4
+
       # Build image using Buildah action
       - name: Build Image
         id: build_image
