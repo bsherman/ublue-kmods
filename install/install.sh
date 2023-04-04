@@ -6,12 +6,13 @@ wget https://negativo17.org/repos/fedora-steam.repo -O /etc/yum.repos.d/fedora-s
 
 sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/fedora-{cisco-openh264,modular,updates-modular}.repo
 
-# be careful about extra-enabling repos
-grep "enabled=1" /etc/yum.repos.d/rpmfusion*.repo
-#RPMFUSION_ENABLED="$(grep enabled=1 /etc/yum.repos.d/rpmfusion-*.repo > /dev/null; echo $?)"
-#if [[ "$RPMFUSION_ENABLED" == "1" ]]; then \
-#    sed -i '0,/enabled=0/{s/enabled=0/enabled=1/}' /etc/yum.repos.d/rpmfusion-{,non}free{,-updates}.repo; \
-#fi
+# enable rpmfusion only if it was disabled
+for REPO in $(ls /etc/yum.repos.d/rpmfusion-{,non}free{,-updates}.repo); do
+  echo $REPO
+  if [[ "$(grep enabled=1 ${REPO} > /dev/null; echo $?)" == "1" ]]; then \
+    sed -i '0,/enabled=0/{s/enabled=0/enabled=1/}' ${REPO}
+  fi
+done
 
 KERNEL_VERSION="$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')"
 # install stuff
