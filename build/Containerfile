@@ -1,0 +1,20 @@
+ARG IMAGE_NAME="${IMAGE_NAME:-base}"
+ARG IMAGE_SUFFIX="${IMAGE_SUFFIX:-main}"
+ARG BASE_IMAGE="ghcr.io/ublue-os/${IMAGE_NAME}-${IMAGE_SUFFIX}"
+ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-37}"
+
+FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION} AS builder
+
+ADD build.sh /tmp/build.sh
+ADD certs /tmp/certs
+ADD akmods-custom-key.spec /tmp/akmods-custom-key/akmods-custom-key.spec
+
+RUN /tmp/build.sh
+
+
+FROM scratch
+
+# Copy build RPMs
+COPY --from=builder /var/cache/akmods      /akmods
+COPY --from=builder /tmp/akmods-custom-key /akmods-custom-key
+
