@@ -1,6 +1,15 @@
+#!/bin/sh
+
+set -ouex pipefail
+
 sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/fedora-{cisco-openh264,modular,updates-modular}.repo
 
-sed -i '0,/enabled=0/{s/enabled=0/enabled=1/}' /etc/yum.repos.d/rpmfusion-{,non}free{,-updates}.repo
+# be careful about extra-enabling repos
+grep "enabled=1" /etc/yum.repos.d/rpmfusion*.repo
+#RPMFUSION_ENABLED="$(grep enabled=1 /etc/yum.repos.d/rpmfusion-*.repo > /dev/null; echo $?)"
+#if [[ "$RPMFUSION_ENABLED" == "1" ]]; then \
+#    sed -i '0,/enabled=0/{s/enabled=0/enabled=1/}' /etc/yum.repos.d/rpmfusion-{,non}free{,-updates}.repo; \
+#fi
 
 wget https://negativo17.org/repos/fedora-steam.repo -O /etc/yum.repos.d/fedora-steam.repo && \
     rpm-ostree install \

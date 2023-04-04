@@ -1,0 +1,14 @@
+ARG IMAGE_NAME="${IMAGE_NAME:-silverblue}"
+ARG IMAGE_SUFFIX="${IMAGE_SUFFIX:-main}"
+ARG BASE_IMAGE="ghcr.io/ublue-os/${IMAGE_NAME}-${IMAGE_SUFFIX}"
+ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-37}"
+
+FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION}
+
+ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-37}"
+
+COPY --from="ghcr.io/bsherman/base-kmods:${FEDORA_MAJOR_VERSION}" /akmods            /tmp/akmods
+COPY --from="ghcr.io/bsherman/base-kmods:${FEDORA_MAJOR_VERSION}" /akmods-custom-key /tmp/akmods-custom-key
+ADD install.sh /tmp/install.sh
+
+RUN /tmp/install.sh
