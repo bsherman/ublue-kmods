@@ -216,7 +216,7 @@ jobs:
       matrix:
         image_name: [silverblue, kinoite, vauxite]
         image_suffix: [main, nvidia]
-        major_version: [37, 38]
+        major_version: [37]
         pr_prefix:
           - ${{ needs.build_info.outputs.pr_prefix }}
         include:
