@@ -204,6 +204,14 @@ jobs:
         run: |
           echo "${{ toJSON(steps.push.outputs) }}"
 
+  trigger_downstream:
+    name: Trigger downstream ublue-custom
+    needs: build_akmods
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
       - uses: convictional/trigger-workflow-and-wait@v1.6.1
         name: Build ublue-custom
         if: github.event_name != 'pull_request'
