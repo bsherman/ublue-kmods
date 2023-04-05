@@ -206,6 +206,7 @@ jobs:
 
   trigger_downstream:
     name: Trigger downstream ublue-custom
+    runs-on: ubuntu-latest
     needs: build_akmods
     permissions:
       contents: read
