@@ -9,6 +9,8 @@ ADD build.sh /tmp/build.sh
 ADD certs /tmp/certs
 ADD akmods-custom-key.spec /tmp/akmods-custom-key/akmods-custom-key.spec
 
+RUN find /tmp/certs
+
 RUN /tmp/build.sh
 
 

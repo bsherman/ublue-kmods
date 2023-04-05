@@ -113,11 +113,12 @@ jobs:
 
       - name: Retrieve akmods signing key
         run: |
-          mkdir -p certs
+          mkdir -p build/certs
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
               echo "Using test signing key"
           else
-              echo "${{ secrets.AKMOD_PRIVKEY }}" > certs/private_key.priv
+              echo "${{ secrets.AKMOD_PRIVKEY }}" > build/certs/private_key.priv
+              find build/
           fi
 
       # Build metadata
@@ -283,15 +284,6 @@ jobs:
           done
 
           echo "alias_tags=${alias_tags[*]}" >> $GITHUB_OUTPUT
-
-      - name: Retrieve akmods signing key
-        run: |
-          mkdir -p certs
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-              echo "Using test signing key"
-          else
-              echo "${{ secrets.AKMOD_PRIVKEY }}" > certs/private_key.priv
-          fi
 
       # Build metadata
       - name: Image Metadata
