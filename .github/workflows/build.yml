@@ -118,6 +118,7 @@ jobs:
               echo "Using test signing key"
           else
               echo "${{ secrets.AKMOD_PRIVKEY }}" > build/certs/private_key.priv
+              find build/
           fi
 
       # Build metadata
