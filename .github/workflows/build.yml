@@ -203,6 +203,16 @@ jobs:
         run: |
           echo "${{ toJSON(steps.push.outputs) }}"
 
+      - uses: convictional/trigger-workflow-and-wait@v1.6.1
+        name: Build ublue-custom
+        if: github.event_name != 'pull_request'
+        with:
+          owner: bsherman
+          repo: ublue-custom
+          github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          propagate_failure: false
+          wait_workflow: false
+
   build_variants:
     name: Build variant images
     runs-on: ubuntu-22.04
