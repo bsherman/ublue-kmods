@@ -9,11 +9,11 @@ Included:
 - xone (xbox one wired/rf usb) driver
 - xpadneo (xbox one bluetooth) driver
 
-*nvidia* variants are no longer built here. 
+Full usable images are no longer built here.
 
 There are two alternatives:
-1. my upstream, [ublue-os/nvidia](https://github.com/ublue-os/nvidia) is pretty much stock Silverblue/Kinoite/etc plus nvidia and some nice basic improvements
-2. my custom images also include nvidia variants, [bsherman/ublue-custom](https://github.com/bsherman/ublue-custom)
+1. my upstream, [ublue-os/main](https://github.com/ublue-os/main) and [ublue-os/nvidia](https://github.com/ublue-os/nvidia) are pretty much stock Silverblue/Kinoite/etc plus some nice quality of life improvements, plus the latter includes nvidia drivers.
+2. my custom images build on those upstreams and add the kmod driver RPMs built in this repo, [bsherman/ublue-custom](https://github.com/bsherman/ublue-custom)
 
 
 ## Acknowledgements
