@@ -218,7 +218,7 @@ jobs:
       packages: write
       id-token: write
     steps:
-      - uses: convictional/trigger-workflow-and-wait@v1.6.1
+      - uses: convictional/trigger-workflow-and-wait@v1.6.5
         name: Build ublue-custom
         if: github.event_name != 'pull_request'
         with:
