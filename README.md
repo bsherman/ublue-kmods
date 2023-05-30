@@ -5,7 +5,6 @@
 A layer to store extra driver RPMs on an image for consumption by other images.
 
 Included:
-- wl (broadcom legacy wireless) driver
 - xone (xbox one wired/rf usb) driver
 - xpadneo (xbox one bluetooth) driver
 

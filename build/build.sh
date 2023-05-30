@@ -16,7 +16,6 @@ wget https://negativo17.org/repos/fedora-steam.repo -O /etc/yum.repos.d/fedora-s
     rpm-ostree install \
         akmods \
         mock \
-        akmod-wl \
         akmod-xone \
         akmod-xpadneo
 
@@ -36,12 +35,6 @@ install -Dm644 /tmp/certs/private_key.priv /etc/pki/akmods/private/private_key.p
 
 # protect against incorrect permissions in tmp dirs with break akmods builds
 chmod 1777 /tmp /var/tmp
-
-# Either successfully build and install wl kernel modules, or fail early with debug output
-KERNEL_VERSION="$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" \
-    && akmods --force --kernels "${KERNEL_VERSION}" --kmod wl \
-    && modinfo /usr/lib/modules/${KERNEL_VERSION}/extra/wl/wl.ko.xz > /dev/null \
-    || (cat /var/cache/akmods/wl/*-for-${KERNEL_VERSION}.failed.log && exit 1)
 
 # Either successfully build and install xone kernel modules, or fail early with debug output
 KERNEL_VERSION="$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" \
