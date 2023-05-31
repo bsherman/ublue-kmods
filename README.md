@@ -5,8 +5,9 @@
 A layer to store extra driver RPMs on an image for consumption by other images.
 
 Included:
-- xone (xbox one wired/rf usb) driver
-- xpadneo (xbox one bluetooth) driver
+- nothing much
+
+## Attention: my upstream now builds all the akmods I had here, so I'm not publishing these images anymore.
 
 Full usable images are no longer built here.
 

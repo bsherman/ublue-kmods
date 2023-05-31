@@ -15,9 +15,7 @@ done
 wget https://negativo17.org/repos/fedora-steam.repo -O /etc/yum.repos.d/fedora-steam.repo && \
     rpm-ostree install \
         akmods \
-        mock \
-        akmod-xone \
-        akmod-xpadneo
+        mock
 
 # alternatives cannot create symlinks on its own during a container build
 if [[ ! -e /etc/alternatives/ld ]]; then \
@@ -36,17 +34,11 @@ install -Dm644 /tmp/certs/private_key.priv /etc/pki/akmods/private/private_key.p
 # protect against incorrect permissions in tmp dirs with break akmods builds
 chmod 1777 /tmp /var/tmp
 
-# Either successfully build and install xone kernel modules, or fail early with debug output
-KERNEL_VERSION="$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" \
-    && akmods --force --kernels "${KERNEL_VERSION}" --kmod xone \
-    && modinfo /usr/lib/modules/${KERNEL_VERSION}/extra/xone/xone-{dongle,gip-chatpad,gip-gamepad,gip-guitar,gip-headset,gip,wired}.ko.xz > /dev/null \
-    || (cat /var/cache/akmods/xone/*-for-${KERNEL_VERSION}.failed.log && exit 1)
-
-# Either successfully build and install xpadneo kernel module, or fail early with debug output
-KERNEL_VERSION="$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" \
-    && akmods --force --kernels "${KERNEL_VERSION}" --kmod xpadneo \
-    && modinfo /usr/lib/modules/${KERNEL_VERSION}/extra/xpadneo/hid-xpadneo.ko.xz > /dev/null \
-    || (cat /var/cache/akmods/xpadneo/*-for-${KERNEL_VERSION}.failed.log && exit 1)
+## Either successfully build and install xone kernel modules, or fail early with debug output
+#KERNEL_VERSION="$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" \
+#    && akmods --force --kernels "${KERNEL_VERSION}" --kmod xone \
+#    && modinfo /usr/lib/modules/${KERNEL_VERSION}/extra/xone/xone-{dongle,gip-chatpad,gip-gamepad,gip-guitar,gip-headset,gip,wired}.ko.xz > /dev/null \
+#    || (cat /var/cache/akmods/xone/*-for-${KERNEL_VERSION}.failed.log && exit 1)
 
 install -D /etc/pki/akmods/certs/public_key.der /tmp/akmods-custom-key/rpmbuild/SOURCES/public_key.der
 
